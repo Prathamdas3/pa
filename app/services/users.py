@@ -1,9 +1,11 @@
 from app.repository import UserRepo
 from app.models import Users,UserRole
 from app.schemas import UserCreate
-from app.core import AppException
+from app.core import AppException, get_logger
 from app.utils import hash_password
+from uuid import UUID
 
+logger = get_logger(__name__)
 
 class UserService:
         """Service for managing users."""
@@ -34,14 +36,14 @@ class UserService:
                 raise AppException("User not found.", status_code=404)
             return user
         
-        async def get_user_by_id(self,user_id:str):
+        async def get_user_by_id(self,user_id:UUID):
             """Get user by id."""
             user = await self._repo.get_user_by_id(user_id)
             if not user or not user.is_active:
                 raise AppException("User not found.", status_code=404)
             return user
         
-        async def update_user(self,user_id:str,username:str):
+        async def update_user(self,user_id:UUID,username:str):
             """Update user username."""
             user = await self.get_user_by_id(user_id)
             if not user:
@@ -50,7 +52,7 @@ class UserService:
             await self._repo.save(user)
             return user
         
-        async def delete_user(self,user_id:str):
+        async def delete_user(self,user_id:UUID):
             """Soft delete user."""
             user = await self.get_user_by_id(user_id)
             if not user:

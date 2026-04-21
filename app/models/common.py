@@ -1,9 +1,18 @@
-# models/common.py
+"""Common models and mixins.
+
+Contains shared enums and SQLModel mixins for timestamp fields.
+"""
+
 from uuid import UUID, uuid4
 from enum import Enum
 from sqlalchemy.orm import declared_attr
 from sqlmodel import Field
 import sqlalchemy as sa
+from app.core import get_logger
+
+logger = get_logger(__name__)
+
+logger.debug("Common models loaded")
 
 
 class UserRole(Enum):

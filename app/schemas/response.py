@@ -3,8 +3,10 @@
 Contains shared models like Status enum and generic Response wrapper.
 """
 
-from app.core import CustomBaseModel
+from app.core import CustomBaseModel, get_logger
 from typing import TypeVar, Generic, Optional
+
+logger = get_logger(__name__)
 
 T = TypeVar("T")
 

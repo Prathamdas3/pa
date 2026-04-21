@@ -1,7 +1,11 @@
-from app.core import CustomBaseModel
+from app.core import CustomBaseModel, get_logger
 from pydantic import Field, field_validator, model_validator
 from app.models import TasksPriority,TasksStatus
 from datetime import datetime, timezone
+
+logger = get_logger(__name__)
+
+logger.debug("Tasks schemas loaded")
 
 
 class TaskCreate(CustomBaseModel):

@@ -3,6 +3,9 @@ from uuid import UUID
 from sqlmodel import Field, Relationship, SQLModel
 import sqlalchemy as sa
 from .common import CreatedAtMixin, UpdatedAtMixin, TasksStatus, TasksPriority
+from app.core import get_logger
+
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
     from .users import Users
@@ -41,9 +44,7 @@ class Tasks(CreatedAtMixin, UpdatedAtMixin, SQLModel, table=True):
         )
     )
 
-    due_date: Optional[sa.DateTime] = Field(
-        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=True)
-    )
+    due_date: Optional[str] = Field(default=None, nullable=True)
 
     is_deleted: bool = Field(
         sa_column=sa.Column(sa.Boolean(), nullable=False, server_default=sa.false())

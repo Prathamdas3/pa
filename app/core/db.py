@@ -1,8 +1,11 @@
 from fastapi import Depends
 from sqlalchemy.exc import SQLAlchemyError
 from typing import AsyncGenerator, Annotated
-from app.core import config
+from app.core.config import config
+from app.core.logger import get_logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+
+logger = get_logger(__name__)
 
 class AsyncDatabase:
     def __init__(self, url: str):
@@ -24,14 +27,17 @@ class AsyncDatabase:
         async with self._session_factory() as session:
             try:
                 yield session
-            except SQLAlchemyError :
+            except SQLAlchemyError as e:
                 await session.rollback()
+                logger.error(f"Database session error, rolled back: {e}", exc_info=True)
                 raise
             finally:
                 await session.close()
             
 
-db = AsyncDatabase(url=config.sqlite_db_url if config.db == "sqlite" else config.pg_db_url)   
+db = AsyncDatabase(url=config.database_url)
+logger.info(f"Database initialized: PostgreSQL at {db.url}")
+
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async for session in db.session():
         yield session  

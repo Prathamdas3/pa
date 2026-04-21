@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import config
+from app.core import get_logger
 from app.api.router import api_router
 from app.exception import register_exceptions
+
+logger = get_logger(__name__)
 
 origins = ["http://localhost", "http://localhost:3000"]
 
@@ -26,10 +29,13 @@ register_exceptions(app)
 
 app.include_router(api_router, prefix="/api")
 
+logger.info(f"PrimeTradeAI API started: env={config.env}, debug={config.debug}")
+
 
 def main():
     import uvicorn
 
+    logger.info("Starting uvicorn server on 0.0.0.0:8080")
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",

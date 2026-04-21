@@ -11,6 +11,7 @@ from pathlib import Path
 
 load_dotenv()
 
+
 BASE_DIR = Path(__file__).resolve().parent.parents[1]
 TEMP_DIR = BASE_DIR / "temp"
 
@@ -18,9 +19,7 @@ TEMP_DIR = BASE_DIR / "temp"
 class Settings(BaseSettings):
     env: str = Field(validation_alias="ENV", default="development")
     debug: bool = Field(validation_alias="DEBUG", default=False)
-    db:str=Field(validation_alias="DB", default="sqlite")
-    pg_db_url: str = Field(validation_alias="PG_DATABASE_URL", default="")
-    sqlite_db_url: str = Field(validation_alias="SQLITE_DATABASE_URL", default="")
+    database_url: str = Field(validation_alias="DATABASE_URL", default="")
     access_token_expire_minutes: int = Field(
         validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES", default=30
     )
@@ -41,7 +40,8 @@ def get_config() -> Settings:
     Returns:
         Cached Settings instance.
     """
-    return Settings()
+    settings=Settings()
+    return settings
 
 
 config = get_config()

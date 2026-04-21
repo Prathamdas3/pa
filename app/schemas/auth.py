@@ -1,6 +1,10 @@
-from app.core import CustomBaseModel
+from app.core import CustomBaseModel, get_logger
 from pydantic import Field, EmailStr, field_validator
 import re
+
+logger = get_logger(__name__)
+
+logger.debug("Auth schemas loaded")
 
 WEAK_PASSWORDS = ["password", "12345678", "password123", "qwerty123", "admin123"]
 

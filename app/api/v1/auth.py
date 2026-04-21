@@ -3,7 +3,9 @@ from app.services import user_service_dep
 from app.schemas import Response, UserCreate, LoginUser
 from app.models import UserRole
 from app.utils import create_access_token, verify_password, verify_access_token
-from app.core import config, AppException
+from app.core import config, AppException, get_logger
+
+logger = get_logger(__name__)
 
 auth_router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -25,6 +27,7 @@ async def sign_up_user(
     res: HTTPResponse, user: UserCreate, user_service: user_service_dep
 ):
     """Endpoint for user registration."""
+    logger.info(f"User signup request: email={user.email}, username={user.username}")
     created_user = await user_service.create_user(user, UserRole.user)
     access_token = create_access_token(
         {
@@ -37,6 +40,7 @@ async def sign_up_user(
         },
     )
     set_cookies(res, access_token)
+    logger.info(f"User registered successfully: id={created_user.id}")
     return {
         "data": {
             "id": created_user.id,
@@ -52,7 +56,8 @@ async def sign_up_user(
 async def sign_up_admin(
     res: HTTPResponse, user: UserCreate, user_service: user_service_dep
 ):
-    """Endpoint for user registration."""
+    """Endpoint for admin registration."""
+    logger.info(f"Admin signup request: email={user.email}, username={user.username}")
     created_user = await user_service.create_user(user, UserRole.admin)
     access_token = create_access_token(
         {
@@ -65,7 +70,8 @@ async def sign_up_admin(
         },
     )
     set_cookies(res, access_token)
-    
+    logger.info(f"Admin registered successfully: id={created_user.id}")
+
     return {
         "data": {
             "id": created_user.id,
@@ -76,10 +82,12 @@ async def sign_up_admin(
 
 @auth_router.post("/login", response_model=Response, status_code=status.HTTP_200_OK)
 async def login(res: HTTPResponse, user: LoginUser, user_service: user_service_dep):
+    logger.info(f"Login attempt: email={user.email}")
     existing_user = await user_service.get_user_by_email(user.email)
     if not existing_user or not verify_password(
         user.password, existing_user.hashed_password
     ):
+        logger.warning(f"Login failed: invalid credentials for email={user.email}")
         raise AppException("Invalid email or password.", status_code=401)
     access_token = create_access_token(
         {
@@ -92,6 +100,7 @@ async def login(res: HTTPResponse, user: LoginUser, user_service: user_service_d
         },
     )
     set_cookies(res, access_token)
+    logger.info(f"User logged in successfully: id={existing_user.id}")
     return {
         "data": {
             "id": existing_user.id,
@@ -105,23 +114,17 @@ async def login(res: HTTPResponse, user: LoginUser, user_service: user_service_d
 async def logout(req: Request, res: HTTPResponse, user_service: user_service_dep):
     token = req.cookies.get("access_jwt")
     if not token or not verify_access_token(token):
+        logger.warning("Logout attempt: invalid or missing token")
         raise AppException("Not authenticated.", status_code=401)
     id = verify_access_token(token).get("id")
     existing_user = await user_service.get_user_by_id(id)
     if not existing_user:
+        logger.warning(f"Logout attempt: user not found, id={id}")
         raise AppException("User not found.", status_code=404)
 
     res.delete_cookie(key="access_jwt")
+    logger.info(f"User logged out: id={id}")
     return {"message": "Successfully logged out."}
-
-
-@auth_router.get("/me", response_model=Response, status_code=status.HTTP_200_OK)
-async def get_current_user(req: Request):
-    token = req.cookies.get("access_jwt")
-    if not token or not verify_access_token(token):
-        raise AppException("Not authenticated.", status_code=401)
-    sub = verify_access_token(token)
-    return {"data": {**sub}}
 
 
 @auth_router.get("/refresh", response_model=Response, status_code=status.HTTP_200_OK)
@@ -130,10 +133,12 @@ async def refresh_token(
 ):
     token = req.cookies.get("access_jwt")
     if not token or not verify_access_token(token):
+        logger.warning("Token refresh: invalid or missing token")
         raise AppException("Not authenticated.", status_code=401)
     id = verify_access_token(token).get("id")
     existing_user = await user_service.get_user_by_id(id)
     if not existing_user:
+        logger.warning(f"Token refresh: user not found, id={id}")
         raise AppException("User not found.", status_code=404)
 
     new_access_token = create_access_token(
@@ -147,6 +152,7 @@ async def refresh_token(
         }
     )
     set_cookies(res, new_access_token)
+    logger.info(f"Token refreshed for user: id={id}")
     return {
         "data": {
             "message": "Token refreshed successfully.",

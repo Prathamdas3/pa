@@ -4,6 +4,9 @@ from sqlmodel import Field, Relationship, SQLModel
 from pydantic import EmailStr
 import sqlalchemy as sa
 from .common import CreatedAtMixin, UpdatedAtMixin, UserRole
+from app.core import get_logger
+
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
     from .tasks import Tasks
