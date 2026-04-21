@@ -22,14 +22,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { useCreateTask, useDeleteTask, useTasks } from "@/hooks/use-tasks";
+import { useCreateTask, useDeleteTask, useGetTasks } from "#/hooks/task";
 
 export const Route = createFileRoute("/tasks")({
 	component: TasksPage,
 });
 
 function TasksPage() {
-	const { data: tasks, isLoading, error } = useTasks();
+	const { data: tasks, isLoading, error } = useGetTasks();
 	const createTask = useCreateTask();
 	const deleteTask = useDeleteTask();
 

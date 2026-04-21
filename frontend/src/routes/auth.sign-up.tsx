@@ -12,7 +12,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useSignUp } from "@/hooks/use-auth";
+import { useSignUpUser } from "#/hooks/auth";
 
 export const Route = createFileRoute("/auth/sign-up")({
 	component: SignUpPage,
@@ -22,7 +22,7 @@ function SignUpPage() {
 	const [email, setEmail] = useState("");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const signUp = useSignUp();
+	const signUp = useSignUpUser();
 	const navigate = useNavigate();
 
 	const handleSubmit = async (e: React.FormEvent) => {

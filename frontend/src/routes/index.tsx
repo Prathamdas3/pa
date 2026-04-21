@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Github, Rocket, Terminal } from "lucide-react";
+import { GitBranch, Rocket, Terminal } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,7 @@ function Home() {
 							variant="outline"
 							className="h-12 px-8 text-lg font-medium"
 						>
-							<Github className="mr-2 h-5 w-5" />
+							<GitBranch className="mr-2 h-5 w-5" />
 							Github Repo
 						</Button>
 					</div>

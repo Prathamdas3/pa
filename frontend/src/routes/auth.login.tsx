@@ -12,7 +12,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useLogin } from "@/hooks/use-auth";
+import { useLogin } from "#/hooks/auth";
 
 export const Route = createFileRoute("/auth/login")({
 	component: LoginPage,

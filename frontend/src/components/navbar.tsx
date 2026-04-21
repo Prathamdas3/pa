@@ -1,11 +1,12 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { LogOut, User as UserIcon } from "lucide-react";
+import { useLogout } from "#/hooks/auth";
+import { useGetMe } from "#/hooks/user";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useLogout, useUser } from "@/hooks/use-auth";
 
 export function Navbar() {
-	const { data: user, isLoading } = useUser();
+	const { data: user, isLoading } = useGetMe();
 	const logout = useLogout();
 	const navigate = useNavigate();
 
