@@ -1,0 +1,356 @@
+{
+  "name": "PrimeTradeAI API",
+  "version": "0.1.0",
+  "description": "FastAPI backend for PrimeTradeAI task management application",
+  "baseUrl": "/api/v1",
+  "enums": {
+    "TasksStatus": {
+      "pending": "Task is waiting to be started",
+      "in_progress": "Task is currently being worked on",
+      "completed": "Task has been completed"
+    },
+    "TasksPriority": {
+      "low": "Low priority task",
+      "medium": "Medium priority task",
+      "high": "High priority task"
+    },
+    "UserRole": {
+      "user": "Regular user account",
+      "admin": "Administrator account"
+    }
+  },
+  "schemas": {
+    "UserCreate": {
+      "type": "object",
+      "fields": {
+        "email": { "type": "string", "format": "email", "required": true },
+        "username": { "type": "string", "required": true, "minLength": 3, "maxLength": 30, "pattern": "^[a-zA-Z0-9_]+$", "banned": ["admin", "root", "superuser"] },
+        "password": { "type": "string", "required": true, "minLength": 8, "rules": "1 uppercase, 1 lowercase, 1 digit, 1 special character, no spaces, not common" }
+      }
+    },
+    "LoginUser": {
+      "type": "object",
+      "fields": {
+        "email": { "type": "string", "format": "email", "required": true },
+        "password": { "type": "string", "required": true, "minLength": 8 }
+      }
+    },
+    "UserUpdate": {
+      "type": "object",
+      "fields": {
+        "username": { "type": "string", "required": true, "minLength": 3, "maxLength": 30, "pattern": "^[a-zA-Z0-9_]+$", "banned": ["admin", "root", "superuser"] }
+      }
+    },
+    "TaskCreate": {
+      "type": "object",
+      "fields": {
+        "title": { "type": "string", "required": true, "minLength": 3, "maxLength": 100 },
+        "description": { "type": "string", "required": false, "maxLength": 2000 },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"], "required": false, "default": "medium" },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed"], "required": false, "default": "pending" },
+        "due_date": { "type": "string", "format": "ISO 8601 datetime", "required": false, "rule": "must be in the future" },
+        "tags": { "type": "array", "items": "string", "required": false, "maxItems": 10, "itemRules": "max 30 chars, no empty, no duplicates" }
+      }
+    },
+    "TaskUpdate": {
+      "type": "object",
+      "fields": {
+        "title": { "type": "string", "required": false, "minLength": 3, "maxLength": 100 },
+        "description": { "type": "string", "required": false, "maxLength": 2000 },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"], "required": false },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed"], "required": false },
+        "due_date": { "type": "string", "format": "ISO 8601 datetime", "required": false, "rule": "must be in the future" },
+        "tags": { "type": "array", "items": "string", "required": false, "maxItems": 10, "itemRules": "max 30 chars, no empty, no duplicates" }
+      }
+    },
+    "Task": {
+      "type": "object",
+      "fields": {
+        "id": { "type": "string", "format": "UUID" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "due_date": { "type": "string", "format": "ISO 8601 datetime" },
+        "tags": { "type": "array", "items": "string" },
+        "user_id": { "type": "string", "format": "UUID" },
+        "created_at": { "type": "string", "format": "ISO 8601 datetime" },
+        "updated_at": { "type": "string", "format": "ISO 8601 datetime" }
+      }
+    },
+    "User": {
+      "type": "object",
+      "fields": {
+        "id": { "type": "string", "format": "UUID" },
+        "email": { "type": "string", "format": "email" },
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "is_active": { "type": "boolean" }
+      }
+    },
+    "ApiResponse": {
+      "type": "object",
+      "fields": {
+        "data": { "type": "any", "required": false },
+        "error": { "type": "any", "required": false }
+      }
+    }
+  },
+  "endpoints": [
+    {
+      "path": "/auth/sign-up/user",
+      "method": "POST",
+      "description": "Register a new regular user account",
+      "auth": null,
+      "requestBody": { "type": "UserCreate", "required": true },
+      "response": {
+        "status": 201,
+        "type": "ApiResponse",
+        "data": { "id": "string", "email": "string", "username": "string" }
+      },
+      "setsCookie": "access_jwt"
+    },
+    {
+      "path": "/auth/sign-up/admin",
+      "method": "POST",
+      "description": "Register a new admin user account",
+      "auth": null,
+      "requestBody": { "type": "UserCreate", "required": true },
+      "response": {
+        "status": 201,
+        "type": "ApiResponse",
+        "data": { "id": "string", "email": "string", "username": "string" }
+      },
+      "setsCookie": "access_jwt"
+    },
+    {
+      "path": "/auth/login",
+      "method": "POST",
+      "description": "Authenticate user and receive JWT cookie",
+      "auth": null,
+      "requestBody": { "type": "LoginUser", "required": true },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "id": "string", "email": "string", "username": "string" }
+      },
+      "setsCookie": "access_jwt"
+    },
+    {
+      "path": "/auth/logout",
+      "method": "POST",
+      "description": "Invalidate JWT cookie and log out user",
+      "auth": "access_jwt cookie",
+      "requestBody": null,
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "message": "Successfully logged out." }
+      },
+      "clearsCookie": "access_jwt"
+    },
+    {
+      "path": "/auth/refresh",
+      "method": "GET",
+      "description": "Refresh the JWT access token using existing cookie",
+      "auth": "access_jwt cookie",
+      "requestBody": null,
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "message": "Token refreshed successfully." }
+      },
+      "setsCookie": "access_jwt"
+    },
+    {
+      "path": "/tasks",
+      "method": "GET",
+      "description": "Get all tasks belonging to the authenticated user",
+      "auth": "access_jwt cookie",
+      "requestBody": null,
+      "queryParams": null,
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "type": "array", "items": "Task" }
+      }
+    },
+    {
+      "path": "/tasks",
+      "method": "POST",
+      "description": "Create a new task for the authenticated user",
+      "auth": "access_jwt cookie",
+      "requestBody": { "type": "TaskCreate", "required": true },
+      "response": {
+        "status": 201,
+        "type": "ApiResponse",
+        "data": "Task"
+      }
+    },
+    {
+      "path": "/tasks/{task_id}",
+      "method": "GET",
+      "description": "Get a specific task by ID for the authenticated user",
+      "auth": "access_jwt cookie",
+      "requestBody": null,
+      "pathParams": { "task_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": "Task"
+      }
+    },
+    {
+      "path": "/tasks/{task_id}",
+      "method": "PATCH",
+      "description": "Update a specific task by ID for the authenticated user",
+      "auth": "access_jwt cookie",
+      "requestBody": { "type": "TaskUpdate", "required": true },
+      "pathParams": { "task_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": "Task"
+      }
+    },
+    {
+      "path": "/tasks/{task_id}",
+      "method": "DELETE",
+      "description": "Delete a specific task by ID for the authenticated user",
+      "auth": "access_jwt cookie",
+      "requestBody": null,
+      "pathParams": { "task_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "message": "Task deleted successfully." }
+      }
+    },
+    {
+      "path": "/tasks/admin/all",
+      "method": "GET",
+      "description": "Admin: Get all tasks across all users",
+      "auth": "access_jwt cookie (admin role required)",
+      "requestBody": null,
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "type": "array", "items": "Task" }
+      }
+    },
+    {
+      "path": "/tasks/admin/{task_id}",
+      "method": "GET",
+      "description": "Admin: Get any task by ID regardless of owner",
+      "auth": "access_jwt cookie (admin role required)",
+      "requestBody": null,
+      "pathParams": { "task_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": "Task"
+      }
+    },
+    {
+      "path": "/tasks/admin/{task_id}",
+      "method": "DELETE",
+      "description": "Admin: Delete any task by ID regardless of owner",
+      "auth": "access_jwt cookie (admin role required)",
+      "requestBody": null,
+      "pathParams": { "task_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "message": "Task deleted by admin." }
+      }
+    },
+    {
+      "path": "/users/me",
+      "method": "GET",
+      "description": "Get the currently authenticated user's profile",
+      "auth": "access_jwt cookie",
+      "requestBody": null,
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "id": "string", "email": "string", "username": "string", "role": "string" }
+      }
+    },
+    {
+      "path": "/users/me",
+      "method": "PATCH",
+      "description": "Update the currently authenticated user's username",
+      "auth": "access_jwt cookie",
+      "requestBody": { "type": "UserUpdate", "required": true },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "message": "Username updated successfully." }
+      }
+    },
+    {
+      "path": "/users/me",
+      "method": "DELETE",
+      "description": "Delete the currently authenticated user account",
+      "auth": "access_jwt cookie",
+      "requestBody": null,
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "message": "User deleted successfully." }
+      },
+      "clearsCookie": "access_jwt"
+    },
+    {
+      "path": "/users/admin/all",
+      "method": "GET",
+      "description": "Admin: Get all registered users",
+      "auth": "access_jwt cookie (admin role required)",
+      "requestBody": null,
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "type": "array", "items": { "id": "string", "username": "string", "email": "string", "role": "string", "is_active": "boolean" } }
+      }
+    },
+    {
+      "path": "/users/admin/{user_id}",
+      "method": "GET",
+      "description": "Admin: Get any user by ID",
+      "auth": "access_jwt cookie (admin role required)",
+      "requestBody": null,
+      "pathParams": { "user_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "id": "string", "email": "string", "username": "string", "role": "string" }
+      }
+    },
+    {
+      "path": "/users/admin/{user_id}",
+      "method": "DELETE",
+      "description": "Admin: Delete any user by ID",
+      "auth": "access_jwt cookie (admin role required)",
+      "requestBody": null,
+      "pathParams": { "user_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "message": "User deleted by admin." }
+      }
+    },
+    {
+      "path": "/users/admin/{user_id}/role",
+      "method": "PATCH",
+      "description": "Admin: Promote or demote a user's role",
+      "auth": "access_jwt cookie (admin role required)",
+      "requestBody": { "type": "inline", "required": true, "schema": { "role": { "type": "string", "enum": ["user", "admin"], "in": "query" } } },
+      "pathParams": { "user_id": { "type": "UUID", "required": true } },
+      "response": {
+        "status": 200,
+        "type": "ApiResponse",
+        "data": { "id": "string", "email": "string", "username": "string", "role": "string" }
+      }
+    }
+  ]
+}
