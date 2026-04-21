@@ -59,3 +59,29 @@ class TaskService:
             raise AppException("Task not found.", status_code=404)
         await self._repo.delete(task)
         logger.info(f"Task deleted: id={task_id}")
+
+    async def get_all_tasks(self):
+        """Get all tasks (admin)."""
+        logger.debug("Getting all tasks (admin)")
+        tasks = await self._repo.get_all_tasks()
+        logger.debug(f"Retrieved {len(tasks)} tasks")
+        return tasks
+
+    async def get_task_by_id_admin(self, task_id: UUID):
+        """Get any task by id (admin)."""
+        logger.debug(f"Getting task (admin): task_id={task_id}")
+        task = await self._repo.get_task_by_id_no_user(task_id)
+        if not task:
+            logger.warning(f"Task not found: task_id={task_id}")
+            raise AppException("Task not found.", status_code=404)
+        return task
+
+    async def delete_task_admin(self, task_id: UUID):
+        """Delete any task (admin)."""
+        logger.debug(f"Deleting task (admin): task_id={task_id}")
+        task = await self._repo.get_task_by_id_no_user(task_id)
+        if not task:
+            logger.warning(f"Task deletion failed: task not found, task_id={task_id}")
+            raise AppException("Task not found.", status_code=404)
+        await self._repo.delete(task)
+        logger.info(f"Task deleted by admin: id={task_id}")

@@ -32,10 +32,10 @@ async def sign_up_user(
     access_token = create_access_token(
         {
             "sub": {
-                "id": created_user.id,
+                "id": str(created_user.id),
                 "email": created_user.email,
                 "username": created_user.username,
-                "role": created_user.role,
+                "role": str(created_user.role.value),
             }
         },
     )
@@ -43,7 +43,7 @@ async def sign_up_user(
     logger.info(f"User registered successfully: id={created_user.id}")
     return {
         "data": {
-            "id": created_user.id,
+            "id": str(created_user.id),
             "email": created_user.email,
             "username": created_user.username,
         }
@@ -58,14 +58,14 @@ async def sign_up_admin(
 ):
     """Endpoint for admin registration."""
     logger.info(f"Admin signup request: email={user.email}, username={user.username}")
-    created_user = await user_service.create_user(user, UserRole.admin)
+    created_user = await user_service.create_user(user, role=UserRole.admin)
     access_token = create_access_token(
         {
             "sub": {
-                "id": created_user.id,
+                "id": str(created_user.id),
                 "email": created_user.email,
                 "username": created_user.username,
-                "role": created_user.role,
+                "role": str(created_user.role.value),
             }
         },
     )
@@ -74,7 +74,7 @@ async def sign_up_admin(
 
     return {
         "data": {
-            "id": created_user.id,
+            "id": str(created_user.id),
             "email": created_user.email,
             "username": created_user.username,
         }
@@ -83,8 +83,8 @@ async def sign_up_admin(
 @auth_router.post("/login", response_model=Response, status_code=status.HTTP_200_OK)
 async def login(res: HTTPResponse, user: LoginUser, user_service: user_service_dep):
     logger.info(f"Login attempt: email={user.email}")
-    existing_user = await user_service.get_user_by_email(user.email)
-    if not existing_user or not verify_password(
+    existing_user = await user_service.get_user_by_email_no_exception(user.email)
+    if not existing_user or not existing_user.is_active or not verify_password(
         user.password, existing_user.hashed_password
     ):
         logger.warning(f"Login failed: invalid credentials for email={user.email}")
@@ -92,10 +92,10 @@ async def login(res: HTTPResponse, user: LoginUser, user_service: user_service_d
     access_token = create_access_token(
         {
             "sub": {
-                "id": existing_user.id,
+                "id": str(existing_user.id),
                 "email": existing_user.email,
                 "username": existing_user.username,
-                "role": existing_user.role,
+                "role": str(existing_user.role.value),
             }
         },
     )
@@ -103,7 +103,7 @@ async def login(res: HTTPResponse, user: LoginUser, user_service: user_service_d
     logger.info(f"User logged in successfully: id={existing_user.id}")
     return {
         "data": {
-            "id": existing_user.id,
+            "id": str(existing_user.id),
             "email": existing_user.email,
             "username": existing_user.username,
         }
@@ -124,7 +124,7 @@ async def logout(req: Request, res: HTTPResponse, user_service: user_service_dep
 
     res.delete_cookie(key="access_jwt")
     logger.info(f"User logged out: id={id}")
-    return {"message": "Successfully logged out."}
+    return { "data": {"message": "Successfully logged out."}}
 
 
 @auth_router.get("/refresh", response_model=Response, status_code=status.HTTP_200_OK)
@@ -144,10 +144,10 @@ async def refresh_token(
     new_access_token = create_access_token(
         {
             "sub": {
-                "id": existing_user.id,
+                "id": str(existing_user.id),
                 "email": existing_user.email,
                 "username": existing_user.username,
-                "role": existing_user.role,
+                "role": str(existing_user.role),
             }
         }
     )

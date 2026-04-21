@@ -13,7 +13,7 @@ class TaskRepo:
     async def get_tasks_by_user_id(self,user_id:UUID):
         logger.debug(f"Repository: get tasks for user_id={user_id}")
         result = await self._db.execute(
-            select(Tasks).where(Tasks.user_id == user_id, not Tasks.is_deleted )
+            select(Tasks).where(Tasks.user_id == user_id, Tasks.is_deleted == False)
         )
         tasks = result.scalars().all()
         logger.debug(f"Repository: found {len(tasks)} tasks")
@@ -22,7 +22,7 @@ class TaskRepo:
     async def get_task_by_id(self,task_id:UUID,user_id:UUID):
         logger.debug(f"Repository: get task by id={task_id}, user_id={user_id}")
         result = await self._db.execute(
-            select(Tasks).where(Tasks.id == task_id, Tasks.user_id == user_id, not Tasks.is_deleted)
+            select(Tasks).where(Tasks.id == task_id, Tasks.user_id == user_id, Tasks.is_deleted == False)
         )
         task = result.scalars().first()
         logger.debug(f"Repository: found task={task is not None}")
@@ -41,3 +41,21 @@ class TaskRepo:
         task.is_deleted = True
         await self.save(task)
         logger.debug("Repository: task soft deleted")
+
+    async def get_all_tasks(self):
+        logger.debug("Repository: get all tasks")
+        result = await self._db.execute(
+            select(Tasks).where(Tasks.is_deleted == False)
+        )
+        tasks = result.scalars().all()
+        logger.debug(f"Repository: found {len(tasks)} tasks")
+        return tasks
+
+    async def get_task_by_id_no_user(self, task_id: UUID):
+        logger.debug(f"Repository: get task by id={task_id} (no user filter)")
+        result = await self._db.execute(
+            select(Tasks).where(Tasks.id == task_id, Tasks.is_deleted == False)
+        )
+        task = result.scalars().first()
+        logger.debug(f"Repository: found task={task is not None}")
+        return task

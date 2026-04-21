@@ -38,6 +38,18 @@ class UserBase(CustomBaseModel):
         return v
 
 
+class UserUpdate(CustomBaseModel):
+    username: str = Field(min_length=3, max_length=30, pattern=r"^[a-zA-Z0-9_]+$")
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v: str) -> str:
+        banned_usernames = ["admin", "root", "superuser"]
+        if v.lower() in banned_usernames:
+            raise ValueError("This username is reserved")
+        return v
+
+
 class UserCreate(UserBase):
     password: str = Field(min_length=8)
 

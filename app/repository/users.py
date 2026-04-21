@@ -42,3 +42,30 @@ class UserRepo:
         user.is_active = False
         await self.save(user)
         logger.debug("Repository: user soft deleted")
+
+    async def get_all_users(self):
+        logger.debug("Repository: get all users")
+        result = await self._db.execute(
+            select(Users).where(Users.is_active == True)
+        )
+        users = result.scalars().all()
+        logger.debug(f"Repository: found {len(users)} users")
+        return users
+
+    async def get_user_by_id_no_filter(self, user_id: UUID):
+        logger.debug(f"Repository: get user by id (no filter)={user_id}")
+        result = await self._db.execute(
+            select(Users).where(Users.id == user_id)
+        )
+        user = result.scalars().first()
+        logger.debug(f"Repository: found user={user is not None}")
+        return user
+
+    async def get_user_by_username(self, username: str):
+        logger.debug(f"Repository: get user by username={username}")
+        result = await self._db.execute(
+            select(Users).where(Users.username == username)
+        )
+        user = result.scalars().first()
+        logger.debug(f"Repository: found user={user is not None}")
+        return user

@@ -10,14 +10,9 @@ logger = get_logger(__name__)
 class AsyncDatabase:
     def __init__(self, url: str):
         self.url = url
-        self.engine = create_async_engine(
-            self.url,
-            echo=False,
-            pool_pre_ping=True,
-            pool_recycle=1800,
-            pool_size=10,
-            max_overflow=20,
-        )
+        engine_kwargs = {"echo": False}
+       
+        self.engine = create_async_engine(self.url, **engine_kwargs)
         self._session_factory = async_sessionmaker(
             self.engine,
             class_=AsyncSession,

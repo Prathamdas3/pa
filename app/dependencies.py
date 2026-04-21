@@ -1,11 +1,12 @@
 from uuid import UUID
 from fastapi import Depends, status, Request
 from app.core import AppException
+from app.models import UserRole
 from app.utils import verify_access_token
 
 
 class CurrentUser:
-    def __init__(self, id: UUID, role: str):
+    def __init__(self, id: UUID, role: UserRole):
         self.id = id
         self.role = role
 
@@ -20,6 +21,8 @@ def get_current_user(req: Request) -> CurrentUser:
         raise AppException(status_code=status.HTTP_401_UNAUTHORIZED, message="Unauthorized")
     
     try:
+        payload_id = payload.get("role")
+        print(payload_id)
         return CurrentUser(id=UUID(payload.get("id")), role=payload.get("role"))
     except (ValueError, TypeError):
         raise AppException(status_code=status.HTTP_400_BAD_REQUEST, message="Invalid user ID format")

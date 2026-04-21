@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 import sqlalchemy as sa
 from .common import CreatedAtMixin, UpdatedAtMixin, TasksStatus, TasksPriority
 from app.core import get_logger
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .users import Users
 
 
-class Tasks(CreatedAtMixin, UpdatedAtMixin, SQLModel, table=True):
+class Tasks(CreatedAtMixin, UpdatedAtMixin, table=True):
     """Tasks item model.
 
     Attributes:

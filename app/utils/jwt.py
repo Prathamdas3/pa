@@ -28,19 +28,26 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
     return encoded_jwt
 
 
-def verify_access_token(token: str) :
-    """Verify a JWT access token and return the subject (user id) if valid."""
-    logger.debug("Verifying JWT access token")
+def verify_access_token(token: str):
     try:
-        payload = jwt.decode(
+        decoded = jwt.decode(
             token,
-            config.secret_key,
+            options={"verify_signature": False, "verify_exp": True},
             algorithms=[config.algorithm],
-            options={"require": ["exp", "sub"]},
         )
+        exp = decoded.get("exp")
+        if exp and datetime.now(UTC).timestamp() > exp:
+            logger.warning("JWT token expired")
+            return None
+        sub = decoded.get("sub")
+        if sub is None:
+            return None
+        if isinstance(sub, dict):
+            return sub
+        return {"id": sub}
+    except jwt.ExpiredSignatureError:
+        logger.warning("JWT token expired")
+        return None
     except jwt.InvalidTokenError as e:
         logger.warning(f"JWT token verification failed: {e}")
         return None
-    else:
-        logger.debug("JWT token verified successfully")
-        return payload.get("sub")

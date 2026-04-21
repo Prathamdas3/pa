@@ -1,6 +1,6 @@
 
 from typing import TYPE_CHECKING
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 from pydantic import EmailStr
 import sqlalchemy as sa
 from .common import CreatedAtMixin, UpdatedAtMixin, UserRole
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .tasks import Tasks
 
 
-class Users(CreatedAtMixin, UpdatedAtMixin, SQLModel, table=True):
+class Users( CreatedAtMixin, UpdatedAtMixin,  table=True):
     """User account model.
 
     Attributes:
@@ -44,7 +44,7 @@ class Users(CreatedAtMixin, UpdatedAtMixin, SQLModel, table=True):
         sa_column=sa.Column(sa.Boolean(), nullable=False, server_default=sa.true())
     )
 
-    Taskss: list["Tasks"] = Relationship(
+    Tasks: list["Tasks"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )

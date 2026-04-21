@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 
 def register_exceptions(app: FastAPI) -> None:
     from fastapi.exceptions import HTTPException, RequestValidationError
-    from app.models import Response
+    from app.schemas import Response
     from app.core import AppException, get_logger
 
     logger = get_logger(__name__)
