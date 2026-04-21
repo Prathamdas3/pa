@@ -4,12 +4,12 @@ from sqlalchemy import engine_from_config,pool
 from alembic import context
 from sqlmodel import SQLModel
 from app.core.config import config as app_config
-from app.schemas import *
+from app.models import *
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", app_config.database_url)
+config.set_main_option("sqlalchemy.url", app_config.sqlite_db_url if app_config.db == "sqlite" else app_config.pg_db_url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

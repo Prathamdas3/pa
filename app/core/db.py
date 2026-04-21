@@ -1,102 +1,40 @@
-"""Database connection and session management.
-
-Provides Database class for engine creation and session factory,
-and dependency injection functions for FastAPI.
-"""
-
-from sqlmodel import create_engine, SQLModel, Session
 from fastapi import Depends
-from app.core.logger import get_logger
-from app.core.config import config
 from sqlalchemy.exc import SQLAlchemyError
-from typing import Generator, Annotated
+from typing import AsyncGenerator, Annotated
+from app.core import config
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-logger = get_logger(__name__)
-URL = config.database_url
-
-
-class Database:
-    """Database connection manager.
-
-    Manages SQLAlchemy engine creation, session generation,
-    and database initialization.
-    """
-
-    def __init__(
-        self,
-        url: str,
-        pool_size: int = 10,
-        max_overflow: int = 20,
-        pool_recycle: int = 1800,
-        echo: bool = False,
-    ):
-        """Initialize Database with connection parameters.
-
-        Args:
-            url: Database connection URL.
-            pool_size: Connection pool size.
-            max_overflow: Maximum pool overflow.
-            pool_recycle: Pool recycle time in seconds.
-            echo: Enable SQL echo mode.
-        """
+class AsyncDatabase:
+    def __init__(self, url: str):
         self.url = url
-        self.engine = self._create_engine(pool_size, max_overflow, pool_recycle, echo)
+        self.engine = create_async_engine(
+            self.url,
+            echo=False,
+            pool_pre_ping=True,
+            pool_recycle=1800,
+            pool_size=10,
+            max_overflow=20,
+        )
+        self._session_factory = async_sessionmaker(
+            self.engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+        )
+    async def session(self) -> AsyncGenerator[AsyncSession, None]:
+        async with self._session_factory() as session:
+            try:
+                yield session
+            except SQLAlchemyError :
+                await session.rollback()
+                raise
+            finally:
+                await session.close()
+            
 
-    def _create_engine(
-        self, pool_size: int, max_overflow: int, pool_recycle: int, echo: bool
-    ):
-        """Create SQLAlchemy engine with pooling configuration."""
-        try:
-            engine = create_engine(
-                self.url,
-                echo=echo,
-                pool_pre_ping=True,
-                pool_recycle=pool_recycle,
-                pool_size=pool_size,
-                max_overflow=max_overflow,
-            )
-            return engine
-        except Exception:
-            raise
-
-    def init_db(self) -> None:
-        """Initialize database tables from SQLModel metadata."""
-        try:
-            SQLModel.metadata.create_all(self.engine)
-        except SQLAlchemyError:
-            raise
-
-    def session(self) -> Generator[Session, None, None]:
-        """Generate database session for request lifecycle.
-
-        Yields:
-            Session instance.
-
-        Handles rollback on error and cleanup on exit.
-        """
-        db = Session(self.engine)
-        try:
-            yield db
-        except SQLAlchemyError:
-            db.rollback()
-            raise
-
-        finally:
-            db.close()
-
-
-db = Database(url=URL)
-
-
-def get_session() -> Generator[Session, None, None]:
-    """FastAPI dependency for database session.
-
-    Yields:
-        Database session for the request.
-    """
-    yield from db.session()
-
-
-SessionDep = Annotated[Session, Depends(get_session)]
-
-
+db = AsyncDatabase(url=config.sqlite_db_url if config.db == "sqlite" else config.pg_db_url)   
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async for session in db.session():
+        yield session  
+                
+                
+SessionDep = Annotated[AsyncSession, Depends(get_session)]

@@ -18,21 +18,18 @@ TEMP_DIR = BASE_DIR / "temp"
 class Settings(BaseSettings):
     env: str = Field(validation_alias="ENV", default="development")
     debug: bool = Field(validation_alias="DEBUG", default=False)
-    database_url: str = Field(validation_alias="DATABASE_URL", default="")
+    db:str=Field(validation_alias="DB", default="sqlite")
+    pg_db_url: str = Field(validation_alias="PG_DATABASE_URL", default="")
+    sqlite_db_url: str = Field(validation_alias="SQLITE_DATABASE_URL", default="")
     access_token_expire_minutes: int = Field(
         validation_alias="ACCESS_TOKEN_EXPIRE_MINUTES", default=30
-    )
-    refresh_token_expire_days: int = Field(
-        validation_alias="REFRESH_TOKEN_EXPIRE_DAYS", default=7
     )
     secret_key: str = Field(validation_alias="SECRET_KEY", default="")
     algorithm: str = Field(validation_alias="ALGORITHM", default="HS256")
     frontend_url: str = Field(
         validation_alias="FRONTEND_URL", default="http://localhost:3000"
     )
-    backend_url: str = Field(
-        validation_alias="BACKEND_URL", default="http://localhost:9000"
-    )
+
 
     model_config = SettingsConfigDict(env_file=".env")
 

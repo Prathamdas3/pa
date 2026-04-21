@@ -1,6 +1,3 @@
-
-        
-        
 """Custom Pydantic base model.
 
 Provides a base model class with common configuration for all Pydantic models.
@@ -16,4 +13,6 @@ class CustomBaseModel(BaseModel):
     by both alias and original name.
     """
 
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(
+        populate_by_name=True, str_strip_whitespace=True, use_enum_values=True
+    )
