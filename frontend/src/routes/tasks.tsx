@@ -121,7 +121,7 @@ function CreateTaskForm() {
     setDescription("");
     setPriority("medium");
     setStatus("pending");
-    setDueDate("");
+
     setTags([]);
     setTagInput("");
   };
@@ -186,14 +186,14 @@ function CreateTaskForm() {
           </div>
 
           {/* Due Date */}
-          <div className="space-y-1.5">
+          {/* <div className="space-y-1.5">
             <label className="text-sm font-medium">Due Date</label>
             <Input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
             />
-          </div>
+          </div> */}
 
           {/* Tags */}
           <div className="space-y-1.5">
@@ -354,7 +354,7 @@ function TaskCard({ task }: { task: Task }) {
               </div>
             </div>
 
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground uppercase">Due Date</label>
               <Input
                 type="date"
@@ -362,7 +362,7 @@ function TaskCard({ task }: { task: Task }) {
                 onChange={(e) => setEditDueDate(e.target.value)}
                 className="h-8 text-sm"
               />
-            </div>
+            </div> */}
 
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground uppercase">Tags</label>
@@ -514,7 +514,7 @@ function TasksPage() {
   if (error)
     return (
       <div className="p-8 text-center text-destructive">
-        Error loading tasks: {(error as Error).message}
+        Error loading tasks - please try again later. 
       </div>
     );
 

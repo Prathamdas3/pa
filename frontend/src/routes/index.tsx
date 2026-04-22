@@ -1,115 +1,55 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { GitBranch, Rocket, Terminal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 
 export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
-	return (
-		<div className="min-h-screen bg-background p-8 font-sans">
-			<div className="mx-auto max-w-4xl space-y-12">
-				<header className="space-y-4 text-center">
-					<Badge variant="outline" className="px-3 py-1 text-sm">
-						<Rocket className="mr-2 h-4 w-4" />
-						Tailwind CSS v4 + Shadcn UI
-					</Badge>
-					<h1 className="text-5xl font-extrabold tracking-tight lg:text-6xl">
-						PrimeTradeAI Frontend
-					</h1>
-					<p className="mx-auto max-w-2xl text-xl text-muted-foreground">
-						A high-performance trading interface built with TanStack Router,
-						Tailwind CSS v4, and Shadcn UI.
-					</p>
-					<div className="flex justify-center gap-4 pt-4">
-						<Button size="lg" className="h-12 px-8 text-lg font-medium">
-							Get Started
-						</Button>
-						<Button
-							size="lg"
-							variant="outline"
-							className="h-12 px-8 text-lg font-medium"
-						>
-							<GitBranch className="mr-2 h-5 w-5" />
-							Github Repo
-						</Button>
-					</div>
-				</header>
+  const navigate = useNavigate();
 
-				<Separator />
+  return (
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-6">
+      {/* Subtle background grid */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
 
-				<div className="grid gap-6 md:grid-cols-2">
-					<Card>
-						<CardHeader>
-							<CardTitle className="flex items-center gap-2">
-								<Terminal className="h-5 w-5" />
-								Quick Actions
-							</CardTitle>
-							<CardDescription>
-								Test the new Shadcn input and button components.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="space-y-2">
-								<label
-									htmlFor="search-markets"
-									className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									Search Markets
-								</label>
-								<Input
-									id="search-markets"
-									placeholder="Enter symbol (e.g. BTC/USD)..."
-								/>
-							</div>
-						</CardContent>
-						<CardFooter>
-							<Button variant="secondary" className="w-full">
-								Search
-							</Button>
-						</CardFooter>
-					</Card>
+      {/* Glow */}
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
 
-					<Card>
-						<CardHeader>
-							<CardTitle>System Status</CardTitle>
-							<CardDescription>
-								Real-time monitoring of connectivity.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="flex items-center justify-between">
-								<span className="text-sm font-medium">API Connection</span>
-								<Badge className="bg-emerald-500 font-semibold hover:bg-emerald-600">
-									Stable
-								</Badge>
-							</div>
-							<div className="flex items-center justify-between">
-								<span className="text-sm font-medium">Latency</span>
-								<span className="font-mono text-sm">12ms</span>
-							</div>
-							<div className="flex items-center justify-between">
-								<span className="text-sm font-medium">Version</span>
-								<Badge variant="outline">v0.1.0-alpha</Badge>
-							</div>
-						</CardContent>
-					</Card>
-				</div>
+      <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+        <span className="rounded-full border border-border bg-muted px-4 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          PrimeTradeAI
+        </span>
 
-				<footer className="pt-12 text-center text-sm text-muted-foreground">
-					Built with precision using the latest modern web technologies.
-				</footer>
-			</div>
-		</div>
-	);
+        <h1 className="max-w-3xl text-5xl font-extrabold tracking-tight lg:text-7xl">
+          Trade smarter.{" "}
+          <span className="text-primary">Move faster.</span>
+        </h1>
+
+        <p className="max-w-xl text-lg text-muted-foreground">
+          Your intelligent trading companion. Manage tasks, track signals, and
+          stay ahead of the market — all in one place.
+        </p>
+
+        <Button
+          size="lg"
+          className="h-12 px-8 text-base font-semibold"
+          onClick={() => navigate({ to: "/tasks" })}
+        >
+          Get Started
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
+
+      <footer className="absolute bottom-6 text-xs text-muted-foreground">
+        © {new Date().getFullYear()} PrimeTradeAI. All rights reserved.
+      </footer>
+    </div>
+  );
 }
