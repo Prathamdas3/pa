@@ -34,7 +34,7 @@ function ProfilePage() {
 		e.preventDefault();
 		const result = await updateMe.mutateAsync({ username });
 		if (result) {
-			setUsername(result.data ?? username);
+			setUsername(result?.data ?? username);
 		}
 	};
 
