@@ -73,6 +73,8 @@ This will start a PostgreSQL instance on port `5432`.
    uv run python app/main.py
    ```
    The API will be available at `http://localhost:8080`.
+   - **Swagger UI**: `http://localhost:8080/docs` (available in development mode)
+   - **ReDoc**: `http://localhost:8080/redoc`
 
 ### 3. Frontend Setup
 1. Navigate to the frontend directory:
